@@ -1,6 +1,6 @@
 {
-  "name":"Мои дни",
-  "short_name":"Мои дни",
+  "name":"Питание",
+  "short_name":"Питание",
   "start_url":"./",
   "display":"standalone",
   "background_color":"#f7f7f5",

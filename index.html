@@ -31,13 +31,13 @@ button{font:inherit;border:0;color:inherit}.nav{width:38px;height:38px;border-ra
 </head>
 <body>
 <div class="app">
-<header><h1>Мои дни</h1><div class="month-nav"><button class="nav" id="prev">‹</button><div class="month" id="title"></div><button class="nav" id="next">›</button></div></header>
+<header><h1>Питание</h1><div class="month-nav"><button class="nav" id="prev">‹</button><div class="month" id="title"></div><button class="nav" id="next">›</button></div></header>
 <main class="calendar" id="calendar">
 <div class="weekdays"><div class="weekday">Пн</div><div class="weekday">Вт</div><div class="weekday">Ср</div><div class="weekday">Чт</div><div class="weekday">Пт</div><div class="weekday">Сб</div><div class="weekday">Вс</div></div>
 <div class="days" id="days"></div>
 </main>
-<div class="legend"><span><i class="dot gd"></i> хороший</span><span><i class="dot yd"></i> средний</span><span><i class="dot rd"></i> плохой</span></div>
-<div class="hint">Нажми день: 🟢 → 🟡 → 🔴 → без отметки</div>
+<div class="legend"><span><i class="dot gd"></i> здоровое</span><span><i class="dot yd"></i> среднее</span><span><i class="dot rd"></i> много / сладкое</span></div>
+<div class="hint">Оцени питание за день: 🟢 → 🟡 → 🔴 → без отметки</div>
 <button class="reset" id="reset">Сбросить все отметки</button>
 </div>
 <script>
@@ -58,7 +58,7 @@ function render(){
  }
 }
 prev.onclick=()=>{m--;if(m<0){m=11;y--}render()};next.onclick=()=>{m++;if(m>11){m=0;y++}render()};
-reset.onclick=()=>{if(confirm("Удалить все отметки?")){Object.keys(data).forEach(k=>delete data[k]);save();render()}};
+reset.onclick=()=>{if(confirm("Удалить все отметки о питании?")){Object.keys(data).forEach(k=>delete data[k]);save();render()}};
 let sx=0;calendar.addEventListener("touchstart",e=>sx=e.changedTouches[0].screenX,{passive:true});calendar.addEventListener("touchend",e=>{let dx=e.changedTouches[0].screenX-sx;if(Math.abs(dx)>70){dx<0?next.click():prev.click()}},{passive:true});
 render();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
