@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f7f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<title>Мои дни</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--text:#202124;--muted:#8a8a8a;--border:#e7e7e5;--g:#7fc98a;--y:#f4cf65;--r:#e98b88}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+.app{width:min(100%,620px);margin:auto;padding:22px 14px 34px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{font-size:23px;margin:0;font-weight:700}.month-nav{display:flex;align-items:center;gap:7px}
+button{font:inherit;border:0;color:inherit}.nav{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--border);font-size:22px}
+.month{min-width:130px;text-align:center;font-weight:650}
+.calendar{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:12px;box-shadow:0 3px 16px #00000009;touch-action:pan-y}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.weekdays{margin-bottom:6px}
+.weekday{text-align:center;color:var(--muted);font-size:12px;padding:5px 0;font-weight:600}
+.day{aspect-ratio:1;border-radius:13px;background:#fafafa;border:1px solid transparent;position:relative;font-size:15px;transition:transform .08s}
+.day:active{transform:scale(.93)}.day.empty{background:transparent}.day.future{color:#c9c9c9;cursor:default}
+.day.today{border:2px solid #777}.day.green{background:var(--g)}.day.yellow{background:var(--y)}.day.red{background:var(--r)}
+.num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.legend{display:flex;justify-content:center;gap:17px;margin-top:18px;color:#555;font-size:13px}.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:4px}.gd{background:var(--g)}.yd{background:var(--y)}.rd{background:var(--r)}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}.reset{display:block;margin:18px auto 0;color:#888;font-size:12px;text-decoration:underline;text-underline-offset:3px;background:none}
+@media(max-width:420px){.app{padding-top:16px}.calendar{padding:9px}.weekdays,.days{gap:5px}.day{border-radius:11px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Мои дни</h1><div class="month-nav"><button class="nav" id="prev">‹</button><div class="month" id="title"></div><button class="nav" id="next">›</button></div></header>
+<main class="calendar" id="calendar">
+<div class="weekdays"><div class="weekday">Пн</div><div class="weekday">Вт</div><div class="weekday">Ср</div><div class="weekday">Чт</div><div class="weekday">Пт</div><div class="weekday">Сб</div><div class="weekday">Вс</div></div>
+<div class="days" id="days"></div>
+</main>
+<div class="legend"><span><i class="dot gd"></i> хороший</span><span><i class="dot yd"></i> средний</span><span><i class="dot rd"></i> плохой</span></div>
+<div class="hint">Нажми день: 🟢 → 🟡 → 🔴 → без отметки</div>
+<button class="reset" id="reset">Сбросить все отметки</button>
+</div>
+<script>
+const KEY="three-color-calendar-v2", colors=["green","yellow","red"], names=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const data=JSON.parse(localStorage.getItem(KEY)||"{}"), now=new Date(); let y=now.getFullYear(),m=now.getMonth();
+const key=(y,m,d)=>`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function render(){
+ title.textContent=`${names[m]} ${y}`; days.innerHTML="";
+ const first=new Date(y,m,1), count=new Date(y,m+1,0).getDate(), offset=(first.getDay()+6)%7;
+ for(let i=0;i<offset;i++){let e=document.createElement("div");e.className="day empty";days.append(e)}
+ for(let d=1;d<=count;d++){
+  const dt=new Date(y,m,d), k=key(y,m,d), b=document.createElement("button"); b.className="day";
+  if(dt>now && dt.toDateString()!==now.toDateString()){b.classList.add("future");b.disabled=true}
+  if(dt.toDateString()===now.toDateString())b.classList.add("today"); if(data[k])b.classList.add(data[k]);
+  b.innerHTML=`<span class="num">${d}</span>`;
+  b.onclick=()=>{let c=data[k];if(!c)data[k]=colors[0];else if(c===colors[0])data[k]=colors[1];else if(c===colors[1])data[k]=colors[2];else delete data[k];save();render()};days.append(b)
+ }
+}
+prev.onclick=()=>{m--;if(m<0){m=11;y--}render()};next.onclick=()=>{m++;if(m>11){m=0;y++}render()};
+reset.onclick=()=>{if(confirm("Удалить все отметки?")){Object.keys(data).forEach(k=>delete data[k]);save();render()}};
+let sx=0;calendar.addEventListener("touchstart",e=>sx=e.changedTouches[0].screenX,{passive:true});calendar.addEventListener("touchend",e=>{let dx=e.changedTouches[0].screenX-sx;if(Math.abs(dx)>70){dx<0?next.click():prev.click()}},{passive:true});
+render();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
